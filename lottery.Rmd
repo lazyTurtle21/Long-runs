@@ -1,0 +1,52 @@
+---
+title: "Real life application"
+output: html_notebook
+---
+In this R notebook extremely predictable cases of the longest run length are checked based on open data from Florida Pick 2 Midday Lottery(pick_2_lottery.csv).
+
+Function to predict the length of the longest run in n trials with probability of success p.
+```{r}
+longest_run_len_prediction = function(p, n){
+  return(log((log(1/p, exp(1)))/(n * (1-p)^2), p))
+}
+```
+
+Function to find probability that $P(L_n = l)$.
+```{r}
+find_probability = function(p){
+  return(p^(p/(1-p)) - p^(1/(1-p)))
+}
+```
+
+Let's confirm these formulas using open data from Florida Pick 2 Midday Lottery. In this lottery two numbers are chosen randomly every day. So, the probability of success is 0.01. If we take the period of 500 days, $L_n$ is equal to:
+```{r}
+longest_run_len_prediction(0.01, 500)
+```
+With probability:
+```{r}
+find_probability(0.01)
+
+```
+As a run of length $L_n = l$ represents $l + 1$ consecutive games with the same set of numbers. We obtained that in 500 days there will be two games in a row with the same three number sequence, but never three. The chance of this outcome
+is approximately 94.5%. This is such a high probability that if there were
+three or more consecutive games with the same number sequence, or no consecutive
+games with the same number sequence, we might have reason to suspect fraud!
+Let's check this fact on our data.
+```{r}
+winning_numbers <- read.csv(file="C:/Users/User/Desktop/AI/pick_2_lottery.csv", header=TRUE, sep=",")
+
+l2_long_runs = function(dataframe){
+  numbers = dataframe[,2]
+  n = nrow(dataframe)
+  long_runs = 0
+  for (i in 2:n - 1) {
+    if(numbers[i] == numbers[i + 1]){
+      long_runs = long_runs + 1
+      print(dataframe[(i-1):(i + 2),])
+    }
+  }
+  return(long_runs)
+}
+l2_long_runs(winning_numbers)
+```
+Thus, we can see that we have two occurences of the longest run of length 2. As on the previous day and on the next day the numberі differ we obviously don't have three or more consecutive games.
